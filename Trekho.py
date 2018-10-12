@@ -1,15 +1,18 @@
-from Trekho_UI import Ui_dlgTrekho
-from Ui_trek_log import Ui_dlgLogs
-import sys
 import os
 import os.path
-from PyQt5.QtWidgets import QApplication, QMainWindow, QFileDialog, QAction, QMenu, QSystemTrayIcon, QStyle, qApp, QDialog
-from PyQt5.QtGui import QColor
-from PyQt5.QtCore import pyqtSlot, Qt
-
 import subprocess
+import sys
+import logging
 from dotenv import load_dotenv
+from PyQt5.QtCore import Qt, pyqtSlot
+from PyQt5.QtGui import QColor
+from PyQt5.QtWidgets import (QAction, QApplication, QDialog, QFileDialog,
+                             QMainWindow, QMenu, QStyle, QSystemTrayIcon, qApp)
 
+from Trekho_UI import Ui_dlgTrekho
+from Ui_trek_log import Ui_dlgLogs
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+logging.debug('A debug message!')
 
 def getPythonPath(currentpath):
     for dirpath, dirnames, filenames in os.walk(currentpath):
@@ -38,6 +41,7 @@ class ApplicationWindow(QMainWindow):
         self.tray_icon = QSystemTrayIcon(self)
         self.tray_icon.setIcon(
             self.style().standardIcon(QStyle.SP_ComputerIcon))
+        
 
         '''
             Define and add steps to work with the system tray icon
@@ -45,6 +49,7 @@ class ApplicationWindow(QMainWindow):
             hide - hide window
             exit - exit from application
         '''
+    
         show_action = QAction("Show", self)
         quit_action = QAction("Exit", self)
         hide_action = QAction("Hide", self)
@@ -56,7 +61,12 @@ class ApplicationWindow(QMainWindow):
         tray_menu.addAction(hide_action)
         tray_menu.addAction(quit_action)
         self.tray_icon.setContextMenu(tray_menu)
+        self.tray_icon.activated.connect(self.on_systray_activated)
         self.tray_icon.show()
+
+    def on_systray_activated(self, i_reason):
+        if i_reason == QSystemTrayIcon.DoubleClick:
+            self.show()
 
         # Listview context menu
         self.ui.listboxFiles.setContextMenuPolicy(Qt.CustomContextMenu)
